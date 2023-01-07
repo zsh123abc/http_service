@@ -5,6 +5,11 @@ import re
 import urllib.parse
 # import logging
 import settings
+import requests
+import os
+
+# 实现文件上传
+
 
 """
 服务器绑定ip端口并监听,然后等待浏览器客户端访问ip端口连接
@@ -19,19 +24,39 @@ def service_client(new_socket):
     # 1.接收浏览器(客户端)发过来的请求，即http请求: GET / HTTP/1.1
 
     # recv(1024) 接收TCP数据，1024为一次数据接收的大小
-    # decode('utf-8') utf-8格式，bytes解码成字符串
-    request = new_socket.recv(1024)
-    settings.logging.info("格式为：{}".format(type(request)))
-    request_decode = request.decode('utf-8') # 收取消息,收到请求头的所有消息
+    request = new_socket.recv(1024) # 收取消息,收到请求头的所有消息
+    # settings.logging.info("格式为：{}".format(type(request)))
+    request_decode = request.decode('utf-8') # decode('utf-8') utf-8格式，bytes解码成字符串
     if request == "":
         return
     request_header_lines = request_decode.splitlines() # 按照行分隔，返回一个包含请求头所有元素的列表
-
     # 从字符串的开始位置进行匹配,如果起始位置匹配成功,则返回Match对象,否则返回None
     # match匹配完后用正则匹配筛选，只获取'/'和'/'后面的
     # request_header_lines[0] ：获取请求头中的第一条数据'GET /a HTTP/1.1'
     request_header_line = request_header_lines[0]
     ret = re.match(r'[^/]+(/[^ ]*)',request_header_line)
+
+    method = request_header_line.split(" ")[0]
+    if method == 'POST':
+        print("上传文件")
+        response = requests.post
+        print(response)
+        filename = request_header_lines[23][11:-11] # 文件名字
+
+        filepath = request_header_lines[24][7:].split('\\')
+        filepath[-1] = filename
+        files = ''
+        for i in range(len(filepath)-1):
+            file = filepath[i]+'/'
+            files +=file
+
+        filepath = files+filename # 文件存放路径
+
+        f = open(filepath,'r')
+        html_content = f.read(1024)
+
+        f.close
+        pass              
 
     path_name = "/"
 
@@ -47,9 +72,10 @@ def service_client(new_socket):
 
     if path_name == "/":  # 用户请求/时，返回当前目录下的index.html页面
         path_name = "/index.html" 
- 
+    
+
     # 2.返回http格式的数据给浏览器
-    file_name = "D:/zsh/http_service"+path_name
+    file_name = "D:\zsh\python\http_service"+path_name
     try:
         # 路径没错，打开指定路径文件
         f = open(file_name,'rb')
@@ -96,7 +122,7 @@ def service_client(new_socket):
 def main():
     # 用来完成整体的控制
     # 1.创建套接字，
-        # family（socket.AF_INET）指明了协议族/域，
+        # family（socket.AF_INET）指明了协议族/域，TCP/IP
             # socket.AF_UNIX 基于文件的，socket.AF_INET 面向网络的
         # type（socket.SOCK_STREAM）是套接口类型，有连接：传输数据可靠，效率低，无连接：追求速度，可能会丢失数据
             # socket.SOCK_STREAM 面向连接的套接字，socket.SOCK_DGRAM 无连接的套接字

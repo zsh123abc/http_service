@@ -23,7 +23,7 @@ def service_client(new_socket):
         path_name = "/index.html"
  
     # 2.返回http格式的数据给浏览器
-    file_name = 'D:/zsh/http' + path_name
+    file_name = 'D:/zsh/python/http_service' + path_name
     try:
         f = open(file_name,'rb')
     except:
@@ -35,7 +35,7 @@ def service_client(new_socket):
         html_content = f.read()
         f.close()
         # 准备发给浏览器的数据 -- header
-        response = "HTTP/1.1 200 OK\r\n"
+        response = "HTTP/1.1 202 OK\r\n"
         response += "\r\n"
         new_socket.send(response.encode("utf-8"))
         new_socket.send(html_content)
@@ -51,7 +51,7 @@ def main():
     tcp_server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
     # 2.绑定
-    tcp_server_socket.bind(("",8300))
+    tcp_server_socket.bind(("",8100))
     
     # 3.变为监听套接字
     tcp_server_socket.listen(128)
